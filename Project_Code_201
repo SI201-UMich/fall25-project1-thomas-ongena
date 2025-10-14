@@ -1,0 +1,54 @@
+def load_data(fname):
+     import csv 
+     with open(fname, 'r') as csv_file: 
+         csv_reader = csv.reader(csv_file)
+         header = next(csv_reader)
+         print('Column Headers:', header)
+         first_row = next(csv_reader)
+         print(first_row)
+         row_count = 0
+         for row in csv_reader: 
+             row_count += 1
+         print(row_count)
+         for row in csv_reader: 
+             print(row)
+             break  
+    
+
+def calculation_1(fname):
+    import pandas as pd
+    df = pd.read_csv(fname)
+    west_df = df[df['Region'] == 'West']
+    wanted_value_west = west_df[west_df['Sales'] > 500]
+    category_counts = west_df['Category'].value_counts() 
+    wanted_counts = wanted_value_west['Category'].value_counts()
+    percentage = (wanted_counts / category_counts) * 100
+    percentage = round(percentage, 2)
+    print(percentage)  
+
+
+def calculation_2(fname): 
+    import pandas as pd 
+    df = pd.read_csv(fname)
+    corporate_df = df[df['Segment'] == 'Corporate']
+    first_class_corp = corporate_df[corporate_df['Ship Mode'] == 'First Class']
+    average_sale = first_class_corp['Sales'].mean() 
+    average_sale = round(average_sale, 2)
+    print(average_sale)
+
+
+def push_changes(percentage, average_sale):
+    import pandas as pd 
+    avg_df = pd.DataFrame({'Category': ['Average Sale'], 'Percentage': [average_sale]}) 
+    perc_df = percentage.reset_index()
+    perc_df.columns = ['Category', 'Percentage']
+    result_df = pd.concat([perc_df, avg_df], ignore_index=True)
+    result_df.to_csv('project_results.csv', index=False)
+
+
+def main(): 
+    calculation_1('SampleSuperstore.csv')
+    calculation_2('SampleSuperstore.csv')
+    #push_changes(percentage, average_sale)
+
+main() 
