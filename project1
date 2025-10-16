@@ -1,0 +1,107 @@
+# Name: Thomas Ongena 
+# Student ID: 7717 6574
+# Email: tongena@umich.edu 
+# Collaborators: None 
+# GenAI Usage: I used GenAI to read my code and the syllabus and make sure my work would recieve full points. Additionally, I used it to help me write the test case functions and to check my calculations to make sure they followed the rubric. 
+# I also used it to make sure I was reading the csv file into the correct data form so I would not recieve a penalty for doing it incorrectly. 
+
+import csv
+
+def load_data(fname):
+     import csv 
+     with open(fname, 'r') as csv_file: 
+         reader = csv.DictReader(csv_file)
+         data = list(reader)
+         return data 
+    
+
+def calculation_1(data):
+    if not data: 
+        return {} 
+    required_columns = {'Region', 'Sales', 'Category'}
+    west_data = []
+    for row in data: 
+        if row['Region'] == 'West': 
+            west_data.append(row)
+    category_counts = {} 
+    for row in west_data: 
+        cat = row['Category']
+        if cat in category_counts: 
+            category_counts[cat] += 1
+        else: 
+            category_counts[cat] = 1
+    high_sales_west = [] 
+    for row in west_data: 
+        try: 
+            sales_value = float(row['Sales'])
+        except ValueError: 
+            continue 
+        if sales_value > 500: 
+            high_sales_west.append(row)
+    high_counts = {} 
+    for row in high_sales_west: 
+        cat = row['Category']
+        high_counts[cat] = high_counts.get(cat, 0) +1 
+    percentages = {} 
+    for cat, total_count in category_counts.items(): 
+        high_count = high_counts.get(cat, 0)
+        if total_count > 0: 
+            perc = (high_count / total_count) * 100
+            percentages[cat] = round(perc, 2) 
+        else: 
+            percentages[cat] = 0.0 
+    return percentages 
+
+def calculation_2(data):
+    if not data: 
+        return 0.0
+    required_columns = ['Segment', 'Ship Mode', 'Sales']
+    corporate_data = []
+    for row in data: 
+        if row['Segment'] == 'Corporate': 
+            corporate_data.append(row)
+    first_class_corp = []
+    for row in corporate_data: 
+        if row['Ship Mode'] == 'First Class': 
+            first_class_corp.append(row)
+    total_sales = 0.0 
+    count = 0 
+    for row in first_class_corp: 
+        try: 
+            sales_value = float(row['Sales'])
+            total_sales += sales_value 
+            count += 1 
+        except ValueError: 
+            continue 
+    average_sale = total_sales / count 
+    average_sale = round(average_sale, 2)
+    return average_sale 
+
+
+def push_changes(percentages, average_sale):
+    if not isinstance(percentages, dict) or not isinstance(average_sale, float): 
+        return 
+    with open('project_results.csv', 'w', newline='') as csvfile: 
+        writer = csv.writer(csvfile)
+        writer.writerow(['Product Category' , ' Percentage of Products shipped to West Region greater than $500'])
+        writer.writerow([])
+        for category, perc in percentages.items(): 
+            writer.writerow([category, f" {perc}%"])
+        writer.writerow([])
+        writer.writerow(['Average Corporate First Class Sale' ,f" {average_sale}"])
+
+
+def main(): 
+    data = load_data('SampleSuperstore.csv')
+    if not data: 
+        print('Failed to load data.')
+        return
+    try: 
+        percentages = calculation_1(data)
+        average_sale = calculation_2(data)
+        push_changes(percentages, average_sale)
+    except Exception as e: 
+        print('An error occurred:', e)
+        return 
+if __name__ == "__main__": 
+    main() 

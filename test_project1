@@ -1,0 +1,141 @@
+# -- TEST CASES -- 
+
+import csv 
+import tempfile 
+import os 
+
+from project1 import load_data, calculation_1, calculation_2
+
+def test_load_data(): 
+
+    # TEST 1 
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp: 
+        tmp.write("Region,Sales,Category\nWest,600.50,Office Supplies\nEast,200.75,Furniture")
+        tmp.seek(0)
+        result = load_data(tmp.name)
+        assert len(result) == 2
+        assert result[0] == {'Region': 'West', 'Sales': '600.50', 'Category': 'Office Supplies'}
+        assert result[1] == {'Region': 'East', 'Sales': '200.75', 'Category': 'Furniture'}
+  
+
+    # TEST 2
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp:
+        tmp.write("Region,Sales,Category\nWest,300.25,Technology")
+        tmp.seek(0)
+        result = load_data(tmp.name)
+        assert len(result) == 1
+        assert result[0] == {'Region': 'West', 'Sales': '300.25', 'Category': 'Technology'}
+
+    # TEST 3
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp: 
+        tmp.write("Region,Sales,Category\n")
+        tmp.seek(0)
+        result = load_data(tmp.name)
+        assert len(result) == 0 
+
+    # TEST 4
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp:
+        tmp.write("")
+        tmp.seek(0)
+        result = load_data(tmp.name)
+        assert len(result) == 0 
+
+
+def test_calculation_1():
+
+    mock_data = [
+        {'Region': 'West', 'Sales': '600.50', 'Category': 'Office Supplies'},
+        {'Region': 'West', 'Sales': '400.25', 'Category': 'Office Supplies'},
+        {'Region': 'West', 'Sales': '700.75', 'Category': 'Furniture'},
+        {'Region': 'East', 'Sales': '300.00', 'Category': 'Technology'}
+    ]
+
+    # TEST 1 
+    result = calculation_1(mock_data)
+    assert len(result) == 2
+    assert result['Office Supplies'] == 50.0
+    assert result['Furniture'] == 100.0 
+    assert 'Technology' not in result 
+
+    # TEST 2 
+    mock_data_no_high = [
+        {'Region': 'West', 'Sales': '400.00', 'Category': 'Office Supplies'},
+        {'Region': 'West', 'Sales': '300.50', 'Category': 'Furniture'},
+        {'Region': 'West', 'Sales': '200.75', 'Category': 'Technology'}
+    ]
+    result = calculation_1(mock_data_no_high)
+    assert len(result) == 3
+    assert result['Office Supplies'] == 0.0
+    assert result['Furniture'] == 0.0 
+    assert result['Technology'] == 0.0
+
+    # TEST 3 
+    result = calculation_1([])
+    assert result == {} 
+
+    # TEST 4 
+    mock_data_invalid = [
+        {'Region': 'West', 'Sales': 'invalid', 'Category': 'Office Supplies'},
+        {'Region': 'West', 'Sales': '600.00', 'Category': 'Office Supplies'},
+        {'Region': 'West', 'Sales': '800.00', 'Category': 'Furniture'}
+    ]
+    result = calculation_1(mock_data_invalid)
+    assert len(result) == 2 
+    assert result['Office Supplies'] == 50.0 
+    assert result['Furniture'] == 100.0
+
+def test_calculation_2():
+
+    mock_data = [
+        {'Segment': 'Corporate', 'Ship Mode': 'First Class', 'Sales': '250.75'},
+        {'Segment': 'Corporate', 'Ship Mode': 'Standard', 'Sales': '150.50'},
+        {'Segment': 'Consumer', 'Ship Mode': 'First Class', 'Sales': '300.00'},
+        {'Segment': 'Corporate', 'Ship Mode': 'First Class', 'Sales': '350.25'}
+    ]
+
+    # TEST 1 
+    result = calculation_2(mock_data)
+    expected_avg = (250.75 + 350.25) / 2 
+    assert result == round(expected_avg, 2)
+
+    # TEST 2 
+    mock_data_single = [
+        {'Segment': 'Corporate', 'Ship Mode': 'First Class', 'Sales': '400.00'},
+        {'Segment': 'Corporate', 'Ship Mode': 'Standard', 'Sales': '200.00'}
+    ]
+    result = calculation_2(mock_data_single)
+    assert result == 400.00
+
+    # TEST 3 
+    mock_data_no_match = [
+        {'Segment': 'Consumer', 'Ship Mode': 'Standard', 'Sales': '100.00'},
+        {'Segment': 'Consumer', 'Ship Mode': 'First Class', 'Sales': '200.00'}
+    ]
+    result = calculation_2(mock_data_no_match)
+    assert result == 0.0 
+
+    # TEST 4 
+    mock_data_invalid = [
+        {'Segment': 'Corporate', 'Ship Mode': 'First Class', 'Sales': 'invalid'},
+        {'Segment': 'Corporate', 'Ship Mode': 'First Class', 'Sales': '500.00'},
+        {'Segment': 'Corporate', 'Ship Mode': 'Standard', 'Sales': '300.00'}
+    ]
+    result = calculation_2(mock_data_invalid)
+    assert result == 500.00 
+
+
+def test_push_changes(): 
+    percentages = {'Office Supplies': 75.0, 'Furniture': 50.0}
+    average_sale = 325.50
+
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as tmp:
+        tmp_name = tmp.name
+
+    with open(tmp_name, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Category', 'Value'])
+        for category, perc in percentages.items():
+            writer.writerow([category, f"{perc}%"])
+        writer.writerow(['Average Corporate First Class Sale', average_sale])
+
+        
