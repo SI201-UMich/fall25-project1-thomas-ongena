@@ -4,6 +4,7 @@
 # Collaborators: None 
 # GenAI Usage: I used GenAI to read my code and the syllabus and make sure my work would recieve full points. Additionally, I used it to help me write the test case functions and to check my calculations to make sure they followed the rubric. 
 # I also used it to make sure I was reading the csv file into the correct data form so I would not recieve a penalty for doing it incorrectly, it helped me fix formatting and data handling syntax issues in my code. 
+#I changed a few aspects of my code compared to the problem decomposition diagram. I'm not sure if I'm supposed to submit an updated version or not. If I am please let me know. 
 
 import csv
 
