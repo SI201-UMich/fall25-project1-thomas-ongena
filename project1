@@ -89,7 +89,7 @@ def push_changes(percentages, average_sale):
         for category, perc in percentages.items(): 
             writer.writerow([category, f" {perc}%"])
         writer.writerow([])
-        writer.writerow(['Average Corporate First Class Sale' ,f" {average_sale}"])
+        writer.writerow(['Average Corporate First Class Sale' ,f" ${average_sale}"])
 
 
 def main(): 
